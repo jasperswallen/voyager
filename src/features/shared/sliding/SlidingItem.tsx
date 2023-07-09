@@ -8,6 +8,7 @@ import {
   IonItemSliding,
 } from "@ionic/react";
 import React, { useMemo, useRef, useState } from "react";
+import { useAppSelector } from "../../../store";
 
 const StyledIonItemSliding = styled(IonItemSliding)`
   --ion-item-border-color: transparent;
@@ -38,15 +39,35 @@ export type SlidingItemAction = {
   bgColor: string;
 };
 
+export type OptionalSlidingItemAction = SlidingItemAction | null;
+
 export interface SlidingItemProps {
   className?: string;
-  startActions: [SlidingItemAction, SlidingItemAction] | [SlidingItemAction];
-  endActions: [SlidingItemAction, SlidingItemAction] | [SlidingItemAction];
+  startActions: [OptionalSlidingItemAction, OptionalSlidingItemAction];
+  endActions: [OptionalSlidingItemAction, OptionalSlidingItemAction];
   children?: React.ReactNode;
 }
 
 const FIRST_ACTION_RATIO = 1;
 const SECOND_ACTION_RATIO = 1.75;
+
+function createActions(
+  inputActions: [OptionalSlidingItemAction, OptionalSlidingItemAction]
+): [SlidingItemAction, SlidingItemAction] | [] {
+  if (inputActions[0] != null && inputActions[1] != null) {
+    return [inputActions[0], inputActions[1]];
+  }
+
+  if (inputActions[0] != null) {
+    return [inputActions[0], inputActions[0]];
+  }
+
+  if (inputActions[1] != null) {
+    return [inputActions[1], inputActions[1]];
+  }
+
+  return [];
+}
 
 export default function SlidingItem({
   startActions,
@@ -54,6 +75,22 @@ export default function SlidingItem({
   className,
   children,
 }: SlidingItemProps) {
+  let { leftSwipeEnabled, rightSwipeEnabled } = useAppSelector(
+    (state) => state.settings.appearance.swipe
+  );
+
+  const composedStartActions = createActions(startActions);
+  const composedEndActions = createActions(endActions);
+
+  leftSwipeEnabled = leftSwipeEnabled && composedEndActions.length > 0;
+
+  rightSwipeEnabled = rightSwipeEnabled && composedStartActions.length > 0;
+
+  /* If both left & right swipes are disabled or empty, there's no need to build the actions. */
+  if (!leftSwipeEnabled && !rightSwipeEnabled) {
+    return children;
+  }
+
   const dragRef = useRef<ItemSlidingCustomEvent | undefined>();
   const [ratio, setRatio] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -73,16 +110,13 @@ export default function SlidingItem({
    * Start Actions
    */
 
-  const currentStartActionIndex = useMemo(() => {
-    if (startActions.length === 1) return 0;
+  const currentStartActionIndex = ratio <= -SECOND_ACTION_RATIO ? 1 : 0;
 
-    return ratio <= -SECOND_ACTION_RATIO ? 1 : 0;
-  }, [ratio, startActions.length]);
-
-  const startActionColor = startActions[currentStartActionIndex]?.bgColor;
+  const startActionColor =
+    composedStartActions[currentStartActionIndex]?.bgColor;
 
   const startActionContents = useMemo(() => {
-    const render = startActions[currentStartActionIndex]?.render;
+    const render = composedStartActions[currentStartActionIndex]?.render;
 
     if (!render) return;
     if (typeof render === "string") return <IonIcon icon={render} />;
@@ -96,16 +130,12 @@ export default function SlidingItem({
    * End Actions
    */
 
-  const currentEndActionIndex = useMemo(() => {
-    if (endActions.length === 1) return 0;
+  const currentEndActionIndex = ratio >= SECOND_ACTION_RATIO ? 1 : 0;
 
-    return ratio >= SECOND_ACTION_RATIO ? 1 : 0;
-  }, [ratio, endActions.length]);
-
-  const endActionColor = endActions[currentEndActionIndex]?.bgColor;
+  const endActionColor = composedEndActions[currentEndActionIndex]?.bgColor;
 
   const endActionContents = useMemo(() => {
-    const render = endActions[currentEndActionIndex]?.render;
+    const render = composedEndActions[currentEndActionIndex]?.render;
 
     if (!render) return;
     if (typeof render === "string") return <IonIcon icon={render} />;
@@ -120,14 +150,38 @@ export default function SlidingItem({
     if (!dragging) return;
 
     if (ratio <= -FIRST_ACTION_RATIO) {
-      startActions[currentStartActionIndex]?.trigger();
+      composedStartActions[currentStartActionIndex]?.trigger();
     } else if (ratio >= FIRST_ACTION_RATIO) {
-      endActions[currentEndActionIndex]?.trigger();
+      composedEndActions[currentEndActionIndex]?.trigger();
     }
 
     dragRef.current.target.closeOpened();
     setDragging(false);
   }
+
+  const startActionOptions = leftSwipeEnabled ? (
+    <IonItemOptions side="start">
+      <IonItemOption color={startActionColor}>
+        <OptionContainer active={ratio <= -FIRST_ACTION_RATIO}>
+          {startActionContents}
+        </OptionContainer>
+      </IonItemOption>
+    </IonItemOptions>
+  ) : (
+    <></>
+  );
+
+  const endActionOptions = rightSwipeEnabled ? (
+    <IonItemOptions side="end">
+      <IonItemOption color={endActionColor}>
+        <OptionContainer active={ratio >= FIRST_ACTION_RATIO}>
+          {endActionContents}
+        </OptionContainer>
+      </IonItemOption>
+    </IonItemOptions>
+  ) : (
+    <></>
+  );
 
   return (
     <StyledIonItemSliding
@@ -136,21 +190,10 @@ export default function SlidingItem({
       onMouseUp={onDragStop}
       className={className}
     >
-      <IonItemOptions side="start">
-        <IonItemOption color={startActionColor}>
-          <OptionContainer active={ratio <= -FIRST_ACTION_RATIO}>
-            {startActionContents}
-          </OptionContainer>
-        </IonItemOption>
-      </IonItemOptions>
+      {startActionOptions}
 
-      <IonItemOptions side="end">
-        <IonItemOption color={endActionColor}>
-          <OptionContainer active={ratio >= FIRST_ACTION_RATIO}>
-            {endActionContents}
-          </OptionContainer>
-        </IonItemOption>
-      </IonItemOptions>
+      {endActionOptions}
+
       {children}
     </StyledIonItemSliding>
   );

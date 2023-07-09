@@ -21,6 +21,12 @@ import {
   OCommentDefaultSort,
   InstanceUrlDisplayMode,
   OInstanceUrlDisplayMode,
+  OCommentSwipeGestures,
+  CommentSwipeGestures,
+  OPostSwipeGestures,
+  PostSwipeGestures,
+  OInboxSwipeGestures,
+  InboxSwipeGestures,
 } from "../../services/db";
 import { get, set } from "./storage";
 import { Mode } from "@ionic/core";
@@ -29,10 +35,35 @@ export {
   type CommentThreadCollapse,
   type PostAppearanceType,
   type CompactThumbnailPositionType,
+  type CommentSwipeGestures,
+  type PostSwipeGestures,
+  type InboxSwipeGestures,
   OCommentThreadCollapse,
   OPostAppearanceType,
   OCompactThumbnailPositionType,
+  OCommentSwipeGestures,
+  OPostSwipeGestures,
+  OInboxSwipeGestures,
 } from "../../services/db";
+
+/**
+ * This is a type factory for objects that supply information about a swipe direction.
+ *
+ * For example, this is used to create a type that adds a callback per-direction, for updating
+ * settings, as well as a description of the direction, for human interaction.
+ *
+ * @template T The type of the object at each direction.
+ */
+export interface DirectionalGestureFactory<T = null> {
+  shortLeft: T;
+  left: T;
+  shortRight: T;
+  right: T;
+}
+
+export type SwipeGestures<
+  T extends CommentSwipeGestures | PostSwipeGestures | InboxSwipeGestures
+> = DirectionalGestureFactory<T>;
 
 interface SettingsState {
   ready: boolean;
@@ -57,6 +88,14 @@ interface SettingsState {
       userDarkMode: boolean;
     };
     deviceMode: Mode;
+    swipe: {
+      leftSwipeEnabled: boolean;
+      rightSwipeEnabled: boolean;
+
+      commentActions: SwipeGestures<CommentSwipeGestures>;
+      postActions: SwipeGestures<PostSwipeGestures>;
+      inboxActions: SwipeGestures<InboxSwipeGestures>;
+    };
   };
   general: {
     comments: {
@@ -106,6 +145,29 @@ const initialState: SettingsState = {
       userDarkMode: false,
     },
     deviceMode: "ios",
+    swipe: {
+      leftSwipeEnabled: true,
+      rightSwipeEnabled: true,
+
+      commentActions: {
+        shortLeft: OCommentSwipeGestures.Upvote,
+        left: OCommentSwipeGestures.Downvote,
+        shortRight: OCommentSwipeGestures.Collapse,
+        right: OCommentSwipeGestures.Reply,
+      },
+      postActions: {
+        shortLeft: OPostSwipeGestures.Upvote,
+        left: OPostSwipeGestures.Downvote,
+        shortRight: OPostSwipeGestures.Reply,
+        right: OPostSwipeGestures.Hide,
+      },
+      inboxActions: {
+        shortLeft: OInboxSwipeGestures.Upvote,
+        left: OInboxSwipeGestures.Downvote,
+        shortRight: OInboxSwipeGestures.Reply,
+        right: OInboxSwipeGestures["Mark Read/Unread"],
+      },
+    },
   },
   general: {
     comments: {
@@ -231,6 +293,89 @@ export const appearanceSlice = createSlice({
       db.setSetting("show_hide_read_button", action.payload);
     },
 
+    setLeftSwipeEnabled(state, action: PayloadAction<boolean>) {
+      state.appearance.swipe.leftSwipeEnabled = action.payload;
+
+      db.setSetting("left_swipe_enabled", action.payload);
+    },
+    setRightSwipeEnabled(state, action: PayloadAction<boolean>) {
+      state.appearance.swipe.rightSwipeEnabled = action.payload;
+
+      db.setSetting("right_swipe_enabled", action.payload);
+    },
+
+    setShortLeftCommentGesture(
+      state,
+      action: PayloadAction<CommentSwipeGestures>
+    ) {
+      state.appearance.swipe.commentActions.shortLeft = action.payload;
+
+      db.setSetting("short_left_comment_action", action.payload);
+    },
+    setLeftCommentGesture(state, action: PayloadAction<CommentSwipeGestures>) {
+      state.appearance.swipe.commentActions.left = action.payload;
+
+      db.setSetting("left_comment_action", action.payload);
+    },
+    setShortRightCommentGesture(
+      state,
+      action: PayloadAction<CommentSwipeGestures>
+    ) {
+      state.appearance.swipe.commentActions.shortRight = action.payload;
+
+      db.setSetting("short_right_comment_action", action.payload);
+    },
+    setRightCommentGesture(state, action: PayloadAction<CommentSwipeGestures>) {
+      state.appearance.swipe.commentActions.right = action.payload;
+
+      db.setSetting("right_comment_action", action.payload);
+    },
+
+    setShortLeftPostGesture(state, action: PayloadAction<PostSwipeGestures>) {
+      state.appearance.swipe.postActions.shortLeft = action.payload;
+
+      db.setSetting("short_left_post_action", action.payload);
+    },
+    setLeftPostGesture(state, action: PayloadAction<PostSwipeGestures>) {
+      state.appearance.swipe.postActions.left = action.payload;
+
+      db.setSetting("left_post_action", action.payload);
+    },
+    setShortRightPostGesture(state, action: PayloadAction<PostSwipeGestures>) {
+      state.appearance.swipe.postActions.shortRight = action.payload;
+
+      db.setSetting("short_right_post_action", action.payload);
+    },
+    setRightPostGesture(state, action: PayloadAction<PostSwipeGestures>) {
+      state.appearance.swipe.postActions.right = action.payload;
+
+      db.setSetting("right_post_action", action.payload);
+    },
+
+    setShortLeftInboxGesture(state, action: PayloadAction<InboxSwipeGestures>) {
+      state.appearance.swipe.inboxActions.shortLeft = action.payload;
+
+      db.setSetting("short_left_inbox_action", action.payload);
+    },
+    setLeftInboxGesture(state, action: PayloadAction<InboxSwipeGestures>) {
+      state.appearance.swipe.inboxActions.left = action.payload;
+
+      db.setSetting("left_inbox_action", action.payload);
+    },
+    setShortRightInboxGesture(
+      state,
+      action: PayloadAction<InboxSwipeGestures>
+    ) {
+      state.appearance.swipe.inboxActions.shortRight = action.payload;
+
+      db.setSetting("short_right_inbox_action", action.payload);
+    },
+    setRightInboxGesture(state, action: PayloadAction<InboxSwipeGestures>) {
+      state.appearance.swipe.inboxActions.right = action.payload;
+
+      db.setSetting("right_inbox_action", action.payload);
+    },
+
     resetSettings: () => ({
       ...initialState,
       ready: true,
@@ -300,6 +445,36 @@ export const fetchSettingsFromDatabase = createAsyncThunk<SettingsState>(
         "show_hide_read_button"
       );
 
+      const left_swipe_enabled = await db.getSetting("left_swipe_enabled");
+      const right_swipe_enabled = await db.getSetting("right_swipe_enabled");
+
+      const short_left_comment_action = await db.getSetting(
+        "short_left_comment_action"
+      );
+      const left_comment_action = await db.getSetting("left_comment_action");
+      const short_right_comment_action = await db.getSetting(
+        "short_right_comment_action"
+      );
+      const right_comment_action = await db.getSetting("right_comment_action");
+
+      const short_left_post_action = await db.getSetting(
+        "short_left_post_action"
+      );
+      const left_post_action = await db.getSetting("left_post_action");
+      const short_right_post_action = await db.getSetting(
+        "short_right_post_action"
+      );
+      const right_post_action = await db.getSetting("right_post_action");
+
+      const short_left_inbox_action = await db.getSetting(
+        "short_left_inbox_action"
+      );
+      const left_inbox_action = await db.getSetting("left_inbox_action");
+      const short_right_inbox_action = await db.getSetting(
+        "short_right_inbox_action"
+      );
+      const right_inbox_action = await db.getSetting("right_inbox_action");
+
       return {
         ...state.settings,
         ready: true,
@@ -321,6 +496,57 @@ export const fetchSettingsFromDatabase = createAsyncThunk<SettingsState>(
             showVotingButtons:
               compact_show_voting_buttons ??
               initialState.appearance.compact.showVotingButtons,
+          },
+          swipe: {
+            leftSwipeEnabled:
+              left_swipe_enabled ??
+              initialState.appearance.swipe.leftSwipeEnabled,
+            rightSwipeEnabled:
+              right_swipe_enabled ??
+              initialState.appearance.swipe.rightSwipeEnabled,
+
+            commentActions: {
+              shortLeft:
+                short_left_comment_action ??
+                initialState.appearance.swipe.commentActions.shortLeft,
+              left:
+                left_comment_action ??
+                initialState.appearance.swipe.commentActions.left,
+              shortRight:
+                short_right_comment_action ??
+                initialState.appearance.swipe.commentActions.shortRight,
+              right:
+                right_comment_action ??
+                initialState.appearance.swipe.commentActions.right,
+            },
+            postActions: {
+              shortLeft:
+                short_left_post_action ??
+                initialState.appearance.swipe.postActions.shortLeft,
+              left:
+                left_post_action ??
+                initialState.appearance.swipe.postActions.left,
+              shortRight:
+                short_right_post_action ??
+                initialState.appearance.swipe.postActions.shortRight,
+              right:
+                right_post_action ??
+                initialState.appearance.swipe.postActions.right,
+            },
+            inboxActions: {
+              shortLeft:
+                short_left_inbox_action ??
+                initialState.appearance.swipe.inboxActions.shortLeft,
+              left:
+                left_inbox_action ??
+                initialState.appearance.swipe.inboxActions.left,
+              shortRight:
+                short_right_inbox_action ??
+                initialState.appearance.swipe.inboxActions.shortRight,
+              right:
+                right_inbox_action ??
+                initialState.appearance.swipe.inboxActions.right,
+            },
           },
         },
         general: {
@@ -373,6 +599,20 @@ export const {
   setDisableMarkingPostsRead,
   setMarkPostsReadOnScroll,
   setShowHideReadButton,
+  setLeftSwipeEnabled,
+  setRightSwipeEnabled,
+  setShortLeftCommentGesture,
+  setLeftCommentGesture,
+  setShortRightCommentGesture,
+  setRightCommentGesture,
+  setShortLeftPostGesture,
+  setLeftPostGesture,
+  setShortRightPostGesture,
+  setRightPostGesture,
+  setShortLeftInboxGesture,
+  setLeftInboxGesture,
+  setShortRightInboxGesture,
+  setRightInboxGesture,
 } = appearanceSlice.actions;
 
 export default appearanceSlice.reducer;

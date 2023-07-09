@@ -58,6 +58,7 @@ import { getDefaultServer } from "./services/app";
 import GeneralPage from "./pages/settings/GeneralPage";
 import HidingSettingsPage from "./pages/settings/HidingSettingsPage";
 import DeviceModeSettingsPage from "./pages/settings/DeviceModeSettingsPage";
+import SwipePage from "./pages/settings/SwipePage";
 
 const Interceptor = styled.div`
   position: absolute;
@@ -341,6 +342,9 @@ export default function TabbedRoutes() {
           </Route>
           <Route exact path="/settings/blocks">
             <BlocksSettingsPage />
+          </Route>
+          <Route exact path="/settings/appearance/swipe">
+            <SwipePage />
           </Route>
           <Route exact path="/settings/reddit-migrate">
             <RedditMigratePage />

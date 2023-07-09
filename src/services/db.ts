@@ -57,6 +57,39 @@ export const OInstanceUrlDisplayMode = {
 export type InstanceUrlDisplayMode =
   (typeof OInstanceUrlDisplayMode)[keyof typeof OInstanceUrlDisplayMode];
 
+export const OCommentSwipeGestures = {
+  Upvote: "upvote",
+  Downvote: "downvote",
+  Reply: "reply",
+  Collapse: "collapse",
+  None: "none",
+};
+
+export type CommentSwipeGestures =
+  (typeof OCommentSwipeGestures)[keyof typeof OCommentSwipeGestures];
+
+export const OPostSwipeGestures = {
+  Upvote: "upvote",
+  Downvote: "downvote",
+  Reply: "reply",
+  Hide: "hide",
+  None: "none",
+};
+
+export type PostSwipeGestures =
+  (typeof OPostSwipeGestures)[keyof typeof OPostSwipeGestures];
+
+export const OInboxSwipeGestures = {
+  Upvote: "upvote",
+  Downvote: "downvote",
+  Reply: "reply",
+  "Mark Read/Unread": "unread",
+  None: "none",
+};
+
+export type InboxSwipeGestures =
+  (typeof OInboxSwipeGestures)[keyof typeof OInboxSwipeGestures];
+
 export type SettingValueTypes = {
   collapse_comment_threads: CommentThreadCollapse;
   user_instance_url_display: InstanceUrlDisplayMode;
@@ -69,6 +102,24 @@ export type SettingValueTypes = {
   disable_marking_posts_read: boolean;
   mark_read_on_scroll: boolean;
   show_hide_read_button: boolean;
+
+  left_swipe_enabled: boolean;
+  right_swipe_enabled: boolean;
+
+  short_left_comment_action: CommentSwipeGestures;
+  left_comment_action: CommentSwipeGestures;
+  short_right_comment_action: CommentSwipeGestures;
+  right_comment_action: CommentSwipeGestures;
+
+  short_left_post_action: PostSwipeGestures;
+  left_post_action: PostSwipeGestures;
+  short_right_post_action: PostSwipeGestures;
+  right_post_action: PostSwipeGestures;
+
+  short_left_inbox_action: InboxSwipeGestures;
+  left_inbox_action: InboxSwipeGestures;
+  short_right_inbox_action: InboxSwipeGestures;
+  right_inbox_action: InboxSwipeGestures;
 };
 
 export interface ISettingItem<T extends keyof SettingValueTypes> {
