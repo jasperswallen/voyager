@@ -11,7 +11,7 @@ import TextSize from "../../features/settings/appearance/TextSize";
 import PostView from "../../features/settings/appearance/PostView";
 import DarkMode from "../../features/settings/appearance/DarkMode";
 import CollapsedByDefault from "../../features/settings/appearance/CollapsedByDefault";
-import SwipeOptions from "../../features/settings/appearance/SwipeOptions";
+import { InsetIonItem, SettingLabel } from "../../features/user/Profile";
 
 export default function AppearancePage() {
   return (
@@ -30,7 +30,9 @@ export default function AppearancePage() {
         <CollapsedByDefault />
         <PostView />
         <DarkMode />
-        <SwipeOptions />
+        <InsetIonItem routerLink="/settings/appearance/swipe">
+          <SettingLabel>Swipe Gestures</SettingLabel>
+        </InsetIonItem>
       </AppContent>
     </IonPage>
   );
