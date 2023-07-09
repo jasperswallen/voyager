@@ -41,6 +41,24 @@ interface AppearanceState {
   swipe: {
     leftSwipeEnabled: boolean;
     rightSwipeEnabled: boolean;
+    commentGestures: {
+      shortLeftGesture: string;
+      leftGesture: string;
+      shortRightGesture: string;
+      rightGesture: string;
+    };
+    postGestures: {
+      shortLeftGesture: string;
+      leftGesture: string;
+      shortRightGesture: string;
+      rightGesture: string;
+    };
+    inboxGestures: {
+      shortLeftGesture: string;
+      leftGesture: string;
+      shortRightGesture: string;
+      rightGesture: string;
+    };
   };
 }
 
@@ -73,6 +91,24 @@ const initialState: AppearanceState = {
   swipe: {
     leftSwipeEnabled: true,
     rightSwipeEnabled: true,
+    commentGestures: {
+      shortLeftGesture: "upvote",
+      leftGesture: "downvote",
+      shortRightGesture: "collapse",
+      rightGesture: "reply",
+    },
+    postGestures: {
+      shortLeftGesture: "upvote",
+      leftGesture: "downvote",
+      shortRightGesture: "reply",
+      rightGesture: "hide",
+    },
+    inboxGestures: {
+      shortLeftGesture: "upvote",
+      leftGesture: "downvote",
+      shortRightGesture: "unread",
+      rightGesture: "reply",
+    },
   },
 };
 
@@ -151,6 +187,66 @@ export const appearanceSlice = createSlice({
 
       db.setSetting("right_swipe_enabled", action.payload);
     },
+    setGestureActions(
+      state,
+      action: PayloadAction<
+        ["comment" | "post" | "inbox", "sl" | "l" | "sr" | "r", string]
+      >
+    ) {
+      const [actionType, direction, swipeAction] = action.payload;
+
+      if (actionType === "comment") {
+        if (direction === "sl") {
+          state.swipe.commentGestures.shortLeftGesture = swipeAction;
+        } else if (direction === "l") {
+          state.swipe.commentGestures.leftGesture = swipeAction;
+        } else if (direction === "sr") {
+          state.swipe.commentGestures.shortRightGesture = swipeAction;
+        } else if (direction === "r") {
+          state.swipe.commentGestures.rightGesture = swipeAction;
+        }
+
+        db.setSetting("comment_gestures", {
+          short_left_gesture: state.swipe.commentGestures.shortLeftGesture,
+          left_gesture: state.swipe.commentGestures.leftGesture,
+          short_right_gesture: state.swipe.commentGestures.shortRightGesture,
+          right_gesture: state.swipe.commentGestures.rightGesture,
+        });
+      } else if (actionType === "post") {
+        if (direction === "sl") {
+          state.swipe.postGestures.shortLeftGesture = swipeAction;
+        } else if (direction === "l") {
+          state.swipe.postGestures.leftGesture = swipeAction;
+        } else if (direction === "sr") {
+          state.swipe.postGestures.shortRightGesture = swipeAction;
+        } else if (direction === "r") {
+          state.swipe.postGestures.rightGesture = swipeAction;
+        }
+
+        db.setSetting("post_gestures", {
+          short_left_gesture: state.swipe.postGestures.shortLeftGesture,
+          left_gesture: state.swipe.postGestures.leftGesture,
+          short_right_gesture: state.swipe.postGestures.shortRightGesture,
+          right_gesture: state.swipe.postGestures.rightGesture,
+        });
+      } else {
+        if (direction === "sl") {
+          state.swipe.inboxGestures.shortLeftGesture = swipeAction;
+        } else if (direction === "l") {
+          state.swipe.inboxGestures.leftGesture = swipeAction;
+        } else if (direction === "sr") {
+          state.swipe.inboxGestures.shortRightGesture = swipeAction;
+        } else if (direction === "r") {
+          state.swipe.inboxGestures.rightGesture = swipeAction;
+        }
+        db.setSetting("inbox_gestures", {
+          short_left_gesture: state.swipe.inboxGestures.shortLeftGesture,
+          left_gesture: state.swipe.inboxGestures.leftGesture,
+          short_right_gesture: state.swipe.inboxGestures.shortRightGesture,
+          right_gesture: state.swipe.inboxGestures.rightGesture,
+        });
+      }
+    },
 
     resetAppearance: () => initialState,
   },
@@ -167,6 +263,9 @@ export const fetchSettingsFromDatabase = createAsyncThunk<AppearanceState>(
       const post_appearance_type = await db.getSetting("post_appearance_type");
       const left_swipe_enabled = await db.getSetting("left_swipe_enabled");
       const right_swipe_enabled = await db.getSetting("right_swipe_enabled");
+      const comment_gestures = await db.getSetting("comment_gestures");
+      const post_gestures = await db.getSetting("post_gestures");
+      const inbox_gestures = await db.getSetting("inbox_gestures");
 
       return {
         ...state.appearance,
@@ -177,6 +276,24 @@ export const fetchSettingsFromDatabase = createAsyncThunk<AppearanceState>(
           type: post_appearance_type,
         },
         swipe: {
+          commentGestures: {
+            shortLeftGesture: comment_gestures.short_left_gesture,
+            leftGesture: comment_gestures.left_gesture,
+            shortRightGesture: comment_gestures.short_right_gesture,
+            rightGesture: comment_gestures.right_gesture,
+          },
+          postGestures: {
+            shortLeftGesture: post_gestures.short_left_gesture,
+            leftGesture: post_gestures.left_gesture,
+            shortRightGesture: post_gestures.short_right_gesture,
+            rightGesture: post_gestures.right_gesture,
+          },
+          inboxGestures: {
+            shortLeftGesture: inbox_gestures.short_left_gesture,
+            leftGesture: inbox_gestures.left_gesture,
+            shortRightGesture: inbox_gestures.short_right_gesture,
+            rightGesture: inbox_gestures.right_gesture,
+          },
           leftSwipeEnabled: left_swipe_enabled,
           rightSwipeEnabled: right_swipe_enabled,
         },
@@ -194,6 +311,7 @@ export const {
   setUseSystemDarkMode,
   setLeftSwipeEnabled,
   setRightSwipeEnabled,
+  setGestureActions,
 } = appearanceSlice.actions;
 
 export default appearanceSlice.reducer;

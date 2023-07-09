@@ -29,6 +29,24 @@ export type SettingValueTypes = {
   blur_nsfw: boolean;
   left_swipe_enabled: boolean;
   right_swipe_enabled: boolean;
+  comment_gestures: {
+    short_left_gesture: string;
+    left_gesture: string;
+    short_right_gesture: string;
+    right_gesture: string;
+  };
+  post_gestures: {
+    short_left_gesture: string;
+    left_gesture: string;
+    short_right_gesture: string;
+    right_gesture: string;
+  };
+  inbox_gestures: {
+    short_left_gesture: string;
+    left_gesture: string;
+    short_right_gesture: string;
+    right_gesture: string;
+  };
 };
 
 export interface ISettingItem<T extends keyof SettingValueTypes> {
@@ -54,6 +72,51 @@ const defaultSettings: ISettingItem<keyof SettingValueTypes>[] = [
   {
     key: "blur_nsfw",
     value: true,
+    user_handle: "",
+    community: "",
+  },
+  {
+    key: "left_swipe_enabled",
+    value: true,
+    user_handle: "",
+    community: "",
+  },
+  {
+    key: "right_swipe_enabled",
+    value: true,
+    user_handle: "",
+    community: "",
+  },
+  {
+    key: "comment_gestures",
+    value: {
+      short_left_gesture: "upvote",
+      left_gesture: "downvote",
+      short_right_gesture: "collapse",
+      right_gesture: "reply",
+    },
+    user_handle: "",
+    community: "",
+  },
+  {
+    key: "post_gestures",
+    value: {
+      short_left_gesture: "upvote",
+      left_gesture: "downvote",
+      short_right_gesture: "reply",
+      right_gesture: "hide",
+    },
+    user_handle: "",
+    community: "",
+  },
+  {
+    key: "inbox_gestures",
+    value: {
+      short_left_gesture: "upvote",
+      left_gesture: "downvote",
+      short_right_gesture: "unread",
+      right_gesture: "reply",
+    },
     user_handle: "",
     community: "",
   },

@@ -23,6 +23,9 @@ export default function SlidingVote({
 }: SlidingVoteProps) {
   const { refresh: refreshPost } = useContext(FeedContext);
   const isHidden = useAppSelector(postHiddenByIdSelector)[item.post?.id];
+  const postGestures = useAppSelector(
+    (state) => state.appearance.swipe.postGestures
+  );
 
   const { presentLoginIfNeeded, presentCommentReply } = useContext(PageContext);
 
