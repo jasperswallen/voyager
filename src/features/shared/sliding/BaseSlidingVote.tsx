@@ -3,10 +3,7 @@ import styled from "@emotion/styled";
 import { IonIcon, useIonToast } from "@ionic/react";
 import { arrowDownSharp, arrowUpSharp } from "ionicons/icons";
 import React, { useCallback, useContext, useMemo } from "react";
-import SlidingItem, {
-  SlidingItemAction,
-  SlidingItemProps,
-} from "./SlidingItem";
+import SlidingItem, { SlidingItemAction } from "./SlidingItem";
 import {
   CommentReplyView,
   CommentView,
@@ -42,18 +39,40 @@ const VoteArrow = styled(IonIcon)<{
     `}
 `;
 
+export type OptionalSlidingItemAction = SlidingItemAction | null;
+
 interface BaseSlidingVoteProps {
   children: React.ReactNode;
   className?: string;
   item: CommentView | PostView | PersonMentionView | CommentReplyView;
-  endActions: SlidingItemProps["endActions"];
+  otherStartActions: [OptionalSlidingItemAction, OptionalSlidingItemAction];
+  otherEndActions: [OptionalSlidingItemAction, OptionalSlidingItemAction];
+}
+
+function createActions(
+  inputActions: [OptionalSlidingItemAction, OptionalSlidingItemAction]
+): [SlidingItemAction, SlidingItemAction] | [] {
+  if (inputActions[0] != null && inputActions[1] != null) {
+    return [inputActions[0], inputActions[1]];
+  }
+
+  if (inputActions[0] != null) {
+    return [inputActions[0], inputActions[0]];
+  }
+
+  if (inputActions[1] != null) {
+    return [inputActions[1], inputActions[1]];
+  }
+
+  return [];
 }
 
 export default function BaseSlidingVote({
   children,
   className,
   item,
-  endActions,
+  otherStartActions,
+  otherEndActions,
 }: BaseSlidingVoteProps) {
   const { presentLoginIfNeeded } = useContext(PageContext);
   const [present] = useIonToast();
@@ -82,36 +101,44 @@ export default function BaseSlidingVote({
     [dispatch, isPost, item, present, presentLoginIfNeeded]
   );
 
-  const startActions: [SlidingItemAction, SlidingItemAction] = useMemo(() => {
-    return [
-      {
-        render: () => (
-          <VoteArrow
-            slash={currentVote === 1}
-            bgColor="primary"
-            icon={arrowUpSharp}
-          />
-        ),
-        trigger: () => {
-          onVote(currentVote === 1 ? 0 : 1);
-        },
-        bgColor: "primary",
+  const upvoteAction: SlidingItemAction = useMemo(() => {
+    return {
+      render: () => (
+        <VoteArrow
+          slash={currentVote === 1}
+          bgColor="primary"
+          icon={arrowUpSharp}
+        />
+      ),
+      trigger: () => {
+        onVote(currentVote === 1 ? 0 : 1);
       },
-      {
-        render: () => (
-          <VoteArrow
-            slash={currentVote === -1}
-            bgColor="danger"
-            icon={arrowDownSharp}
-          />
-        ),
-        trigger: () => {
-          onVote(currentVote === -1 ? 0 : -1);
-        },
-        bgColor: "danger",
-      },
-    ];
+      bgColor: "primary",
+    };
   }, [currentVote, onVote]);
+
+  const downvoteAction: SlidingItemAction = useMemo(() => {
+    return {
+      render: () => (
+        <VoteArrow
+          slash={currentVote === -1}
+          bgColor="danger"
+          icon={arrowDownSharp}
+        />
+      ),
+      trigger: () => {
+        onVote(currentVote === -1 ? 0 : -1);
+      },
+      bgColor: "danger",
+    };
+  }, [currentVote, onVote]);
+
+  const startActions: [SlidingItemAction, SlidingItemAction] = [
+    upvoteAction,
+    downvoteAction,
+  ];
+
+  const endActions = createActions(otherEndActions);
 
   return (
     <SlidingItem

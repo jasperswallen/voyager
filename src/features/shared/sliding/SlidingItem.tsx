@@ -41,8 +41,8 @@ export type SlidingItemAction = {
 
 export interface SlidingItemProps {
   className?: string;
-  startActions: [SlidingItemAction, SlidingItemAction] | [SlidingItemAction];
-  endActions: [SlidingItemAction, SlidingItemAction] | [SlidingItemAction];
+  startActions: [SlidingItemAction, SlidingItemAction] | [];
+  endActions: [SlidingItemAction, SlidingItemAction] | [];
   children?: React.ReactNode;
 }
 
@@ -55,11 +55,15 @@ export default function SlidingItem({
   className,
   children,
 }: SlidingItemProps) {
-  const { leftSwipeEnabled, rightSwipeEnabled } = useAppSelector(
+  let { leftSwipeEnabled, rightSwipeEnabled } = useAppSelector(
     (state) => state.appearance.swipe
   );
 
-  /* If both left & right swipes are disabled, there's no need to build the actions. */
+  leftSwipeEnabled = leftSwipeEnabled && endActions.length > 0;
+
+  rightSwipeEnabled = rightSwipeEnabled && startActions.length > 0;
+
+  /* If both left & right swipes are disabled or empty, there's no need to build the actions. */
   if (!leftSwipeEnabled && !rightSwipeEnabled) {
     return children;
   }
@@ -83,11 +87,7 @@ export default function SlidingItem({
    * Start Actions
    */
 
-  const currentStartActionIndex = useMemo(() => {
-    if (startActions.length === 1) return 0;
-
-    return ratio <= -SECOND_ACTION_RATIO ? 1 : 0;
-  }, [ratio, startActions.length]);
+  const currentStartActionIndex = ratio <= -SECOND_ACTION_RATIO ? 1 : 0;
 
   const startActionColor = startActions[currentStartActionIndex]?.bgColor;
 
@@ -106,11 +106,7 @@ export default function SlidingItem({
    * End Actions
    */
 
-  const currentEndActionIndex = useMemo(() => {
-    if (endActions.length === 1) return 0;
-
-    return ratio >= SECOND_ACTION_RATIO ? 1 : 0;
-  }, [ratio, endActions.length]);
+  const currentEndActionIndex = ratio >= SECOND_ACTION_RATIO ? 1 : 0;
 
   const endActionColor = endActions[currentEndActionIndex]?.bgColor;
 

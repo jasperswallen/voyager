@@ -1,9 +1,9 @@
 import { arrowUndo, chevronCollapse, chevronExpand } from "ionicons/icons";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext } from "react";
 import { SlidingItemAction } from "./SlidingItem";
 import { CommentView } from "lemmy-js-client";
 import { FeedContext } from "../../feed/FeedContext";
-import BaseSlidingVote from "./BaseSlidingVote";
+import BaseSlidingVote, { OptionalSlidingItemAction } from "./BaseSlidingVote";
 import useCollapseRootComment from "../../comment/useCollapseRootComment";
 import { PageContext } from "../../auth/PageContext";
 
@@ -32,29 +32,41 @@ export default function SlidingNestedCommentVote({
     if (commented) refreshPost();
   }, [item, presentCommentReply, refreshPost]);
 
-  const endActions: [SlidingItemAction, SlidingItemAction] = useMemo(() => {
-    return [
-      {
-        render: collapsed ? chevronExpand : chevronCollapse,
-        trigger: () => {
-          collapseRootComment();
-        },
-        bgColor: "tertiary",
-      },
-      {
-        render: arrowUndo,
-        trigger: () => {
-          if (presentLoginIfNeeded()) return;
+  const collapseAction: SlidingItemAction = {
+    render: collapsed ? chevronExpand : chevronCollapse,
+    trigger: () => {
+      collapseRootComment();
+    },
+    bgColor: "tertiary",
+  };
 
-          reply();
-        },
-        bgColor: "primary",
-      },
-    ];
-  }, [collapsed, collapseRootComment, presentLoginIfNeeded, reply]);
+  const replyAction: SlidingItemAction = {
+    render: arrowUndo,
+    trigger: () => {
+      if (presentLoginIfNeeded()) return;
+
+      reply();
+    },
+    bgColor: "primary",
+  };
+
+  const startActions: [OptionalSlidingItemAction, OptionalSlidingItemAction] = [
+    null,
+    null,
+  ];
+
+  const endActions: [SlidingItemAction, SlidingItemAction] = [
+    collapseAction,
+    replyAction,
+  ];
 
   return (
-    <BaseSlidingVote endActions={endActions} className={className} item={item}>
+    <BaseSlidingVote
+      otherStartActions={startActions}
+      otherEndActions={endActions}
+      className={className}
+      item={item}
+    >
       {children}
     </BaseSlidingVote>
   );

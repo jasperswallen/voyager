@@ -1,10 +1,10 @@
 import { useIonToast } from "@ionic/react";
 import { arrowUndo, mailUnread } from "ionicons/icons";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext } from "react";
 import { SlidingItemAction } from "./SlidingItem";
 import { CommentReplyView, PersonMentionView } from "lemmy-js-client";
 import { FeedContext } from "../../feed/FeedContext";
-import BaseSlidingVote from "./BaseSlidingVote";
+import BaseSlidingVote, { OptionalSlidingItemAction } from "./BaseSlidingVote";
 import { getInboxItemId, markRead } from "../../inbox/inboxSlice";
 import { useAppDispatch, useAppSelector } from "../../../store";
 import { PageContext } from "../../auth/PageContext";
@@ -43,26 +43,38 @@ export default function SlidingInbox({
     }
   }, [dispatch, item, present, readByInboxItemId]);
 
-  const endActions: [SlidingItemAction, SlidingItemAction] = useMemo(() => {
-    return [
-      {
-        render: mailUnread,
-        trigger: markUnread,
-        bgColor: "tertiary",
-      },
-      {
-        render: arrowUndo,
-        trigger: async () => {
-          const replied = await presentCommentReply(item);
-          if (replied) refreshPost();
-        },
-        bgColor: "primary",
-      },
-    ];
-  }, [item, markUnread, presentCommentReply, refreshPost]);
+  const markUnreadAction: SlidingItemAction = {
+    render: mailUnread,
+    trigger: markUnread,
+    bgColor: "tertiary",
+  };
+
+  const replyAction: SlidingItemAction = {
+    render: arrowUndo,
+    trigger: async () => {
+      const replied = await presentCommentReply(item);
+      if (replied) refreshPost();
+    },
+    bgColor: "primary",
+  };
+
+  const startActions: [OptionalSlidingItemAction, OptionalSlidingItemAction] = [
+    null,
+    null,
+  ];
+
+  const endActions: [OptionalSlidingItemAction, OptionalSlidingItemAction] = [
+    markUnreadAction,
+    replyAction,
+  ];
 
   return (
-    <BaseSlidingVote endActions={endActions} className={className} item={item}>
+    <BaseSlidingVote
+      otherStartActions={startActions}
+      otherEndActions={endActions}
+      className={className}
+      item={item}
+    >
       {children}
     </BaseSlidingVote>
   );
