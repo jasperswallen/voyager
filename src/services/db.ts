@@ -27,6 +27,8 @@ export type SettingValueTypes = {
   collapse_comment_threads: CommentThreadCollapse;
   post_appearance_type: PostAppearanceType;
   blur_nsfw: boolean;
+  left_swipe_enabled: boolean;
+  right_swipe_enabled: boolean;
 };
 
 export interface ISettingItem<T extends keyof SettingValueTypes> {

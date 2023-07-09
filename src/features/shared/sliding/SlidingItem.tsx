@@ -8,6 +8,7 @@ import {
   IonItemSliding,
 } from "@ionic/react";
 import React, { useMemo, useRef, useState } from "react";
+import { useAppSelector } from "../../../store";
 
 const StyledIonItemSliding = styled(IonItemSliding)`
   --ion-item-border-color: transparent;
@@ -54,6 +55,15 @@ export default function SlidingItem({
   className,
   children,
 }: SlidingItemProps) {
+  const { leftSwipeEnabled, rightSwipeEnabled } = useAppSelector(
+    (state) => state.appearance.swipe
+  );
+
+  /* If both left & right swipes are disabled, there's no need to build the actions. */
+  if (!leftSwipeEnabled && !rightSwipeEnabled) {
+    return children;
+  }
+
   const dragRef = useRef<ItemSlidingCustomEvent | undefined>();
   const [ratio, setRatio] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -129,6 +139,30 @@ export default function SlidingItem({
     setDragging(false);
   }
 
+  const startActionOptions = leftSwipeEnabled ? (
+    <IonItemOptions side="start">
+      <IonItemOption color={startActionColor}>
+        <OptionContainer active={ratio <= -FIRST_ACTION_RATIO}>
+          {startActionContents}
+        </OptionContainer>
+      </IonItemOption>
+    </IonItemOptions>
+  ) : (
+    <></>
+  );
+
+  const endActionOptions = rightSwipeEnabled ? (
+    <IonItemOptions side="end">
+      <IonItemOption color={endActionColor}>
+        <OptionContainer active={ratio >= FIRST_ACTION_RATIO}>
+          {endActionContents}
+        </OptionContainer>
+      </IonItemOption>
+    </IonItemOptions>
+  ) : (
+    <></>
+  );
+
   return (
     <StyledIonItemSliding
       onIonDrag={onIonDrag}
@@ -136,21 +170,10 @@ export default function SlidingItem({
       onMouseUp={onDragStop}
       className={className}
     >
-      <IonItemOptions side="start">
-        <IonItemOption color={startActionColor}>
-          <OptionContainer active={ratio <= -FIRST_ACTION_RATIO}>
-            {startActionContents}
-          </OptionContainer>
-        </IonItemOption>
-      </IonItemOptions>
+      {startActionOptions}
 
-      <IonItemOptions side="end">
-        <IonItemOption color={endActionColor}>
-          <OptionContainer active={ratio >= FIRST_ACTION_RATIO}>
-            {endActionContents}
-          </OptionContainer>
-        </IonItemOption>
-      </IonItemOptions>
+      {endActionOptions}
+
       {children}
     </StyledIonItemSliding>
   );

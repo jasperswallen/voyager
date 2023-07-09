@@ -38,6 +38,10 @@ interface AppearanceState {
     usingSystemDarkMode: boolean;
     userDarkMode: boolean;
   };
+  swipe: {
+    leftSwipeEnabled: boolean;
+    rightSwipeEnabled: boolean;
+  };
 }
 
 const LOCALSTORAGE_KEYS = {
@@ -65,6 +69,10 @@ const initialState: AppearanceState = {
   dark: {
     usingSystemDarkMode: true,
     userDarkMode: false,
+  },
+  swipe: {
+    leftSwipeEnabled: true,
+    rightSwipeEnabled: true,
   },
 };
 
@@ -133,6 +141,16 @@ export const appearanceSlice = createSlice({
 
       set(LOCALSTORAGE_KEYS.DARK.USE_SYSTEM, action.payload);
     },
+    setLeftSwipeEnabled(state, action: PayloadAction<boolean>) {
+      state.swipe.leftSwipeEnabled = action.payload;
+
+      db.setSetting("left_swipe_enabled", action.payload);
+    },
+    setRightSwipeEnabled(state, action: PayloadAction<boolean>) {
+      state.swipe.rightSwipeEnabled = action.payload;
+
+      db.setSetting("right_swipe_enabled", action.payload);
+    },
 
     resetAppearance: () => initialState,
   },
@@ -147,6 +165,8 @@ export const fetchSettingsFromDatabase = createAsyncThunk<AppearanceState>(
         "collapse_comment_threads"
       );
       const post_appearance_type = await db.getSetting("post_appearance_type");
+      const left_swipe_enabled = await db.getSetting("left_swipe_enabled");
+      const right_swipe_enabled = await db.getSetting("right_swipe_enabled");
 
       return {
         ...state.appearance,
@@ -155,6 +175,10 @@ export const fetchSettingsFromDatabase = createAsyncThunk<AppearanceState>(
         },
         posts: {
           type: post_appearance_type,
+        },
+        swipe: {
+          leftSwipeEnabled: left_swipe_enabled,
+          rightSwipeEnabled: right_swipe_enabled,
         },
       };
     });
@@ -168,6 +192,8 @@ export const {
   setPostAppearance,
   setUserDarkMode,
   setUseSystemDarkMode,
+  setLeftSwipeEnabled,
+  setRightSwipeEnabled,
 } = appearanceSlice.actions;
 
 export default appearanceSlice.reducer;
